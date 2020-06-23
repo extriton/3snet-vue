@@ -299,11 +299,9 @@ export default {
   },
   methods: {
     onSubmit () {
-      console.log('Save')
       General.postGeneral(this.form)
     },
     onSaveAndContinue () {
-      console.log('Save and Continue')
       General.postGeneral(this.form)
         .then(() => {
           this.$router.push('/')    
