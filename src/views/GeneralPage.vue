@@ -44,8 +44,7 @@
           <a-form-model-item>
             <a-tabs type="card" default-active-key="en" @change="onChangeTab">
               <a-tab-pane key="ru" tab="Russian">
-                <tinymce
-                  v-if="lang === 'ru'"
+                <rutinymce
                   id="tinymce_ru"
                   :other_options="{ language_url: '/js/langs/ru.js' }"
                   v-model="form.kpi"
@@ -53,8 +52,7 @@
                 />
               </a-tab-pane>
               <a-tab-pane key="en" tab="English">
-                <tinymce
-                  v-if="lang === 'en'"
+                <entinymce
                   id="tinymce_en"
                   v-model="form.kpi"
                   @editorInit="onEditorInit"
@@ -307,14 +305,16 @@
 </template>
 
 <script>
-import tinymce from 'vue-tinymce-editor'
+import rutinymce from 'vue-tinymce-editor'
+import entinymce from 'vue-tinymce-editor'
 import General from '@/api/general'
 // import Editor from '@tinymce/tinymce-vue'
 
 export default {
   name: 'GeneralPage',
   components: {
-    tinymce
+    rutinymce,
+    entinymce
     // Editor
   },
   data () {
