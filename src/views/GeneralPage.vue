@@ -1,237 +1,328 @@
 <template>
   <div class="general-page">
-    <b-form @submit.prevent="onSubmit">
-
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
-          <div class="caption">Advertiser</div>
-        </div>
-        <div class="col-9 col-md-6">
-          <b-form-select v-model="form.advertiser" :options="advertiserOptions"></b-form-select>
-        </div>
-      </div>
+    <a-form-model :model="form">
       
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- Advertiser -->
+      <a-row>
+        <a-col :span="6">
+          <div class="caption">Advertiser</div>
+        </a-col>
+        <a-col :span="17" :offset="1">
+          <a-form-model-item>
+            <a-select
+              mode="multiple"
+              style="width: 100%"
+              placeholder="Select advertiser"
+              v-model="form.advertiser"
+              :options="advertiserOptions"
+            >
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+
+      <!-- External offer id -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">External offer id</div>
-        </div>
-        <div class="col-9 col-md-6">
-          <b-form-input v-model="form.externalOfferId"></b-form-input>
-        </div>
-      </div>
+        </a-col>
+        <a-col :span="17" :offset="1">
+          <a-form-model-item>
+            <a-input
+              v-model="form.externalOfferId"
+            />
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- KPI -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">KPI</div>
-        </div>
-        <div class="col-9 col-md-6">
-          <b-tabs>
-            <b-tab title="Russian" active>
-              <tinymce
-                id="tinymce_rus"
-                :other_options="{ language_url: '/js/langs/ru.js' }"
-                v-model="form.kpi"
-              >
-              </tinymce>
-            </b-tab>
-            <b-tab title="English">
-              <tinymce
-                id="tinymce_en"
-                :other_options="{}"
-                v-model="form.kpi"
-              >
-              </tinymce>
-            </b-tab>
-          </b-tabs>
-        </div>
-      </div>
+        </a-col>
+        <a-col :span="16" :offset="1">
+          <a-form-model-item>
+            <a-tabs type="card" default-active-key="en" @change="onChangeTab">
+              <a-tab-pane key="ru" tab="Russian">
+                <tinymce
+                  v-if="lang === 'ru'"
+                  id="tinymce_ru"
+                  :other_options="{ language_url: '/js/langs/ru.js' }"
+                  v-model="form.kpi"
+                  @editorInit="onEditorInit"
+                />
+              </a-tab-pane>
+              <a-tab-pane key="en" tab="English">
+                <tinymce
+                  v-if="lang === 'en'"
+                  id="tinymce_en"
+                  v-model="form.kpi"
+                  @editorInit="onEditorInit"
+                />
+              </a-tab-pane>
+            </a-tabs>
+            <!--
+            <tinymce
+              id="tinymce_rus"
+              :other_options="{ language_url: '/js/langs/ru.js' }"
+              v-model="form.kpi"
+            />
+            <tinymce
+              id="tinymce_eng"
+              v-model="form.kpi"
+            />
+            -->
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- Traffic sources -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">
-            Traffic sources
-            <span class="info-icon" v-b-popover.hover.top="'Traffic sources!'">i</span>
+            <span>Traffic sources</span>&nbsp;
+            <a-popover title="Info">
+              <template slot="content">
+                <p>Bla bla bla</p>
+              </template>
+              <a-icon class="info-icon" type="info-circle" theme="filled" />
+            </a-popover>
           </div>
-        </div>
-        <div class="col-9 col-md-6 ml-2">
-          <b-form-checkbox-group
-            id="traffic-sources"
-            v-model="form.trafficSources"
-            :options="trafficSourcesOptions"
-            stacked
-          ></b-form-checkbox-group>
-        </div>
-      </div>
+        </a-col>
+        <a-col :span="16" :offset="2">
+          <a-form-model-item>
+            <a-checkbox-group v-model="form.trafficSources">
+              <div
+                v-for="(item, index) in trafficSourcesOptions"
+                :key="'tso' + index"
+              >
+                <a-checkbox :value="item.value">
+                  {{ item.label }}
+                </a-checkbox>
+              </div>
+            </a-checkbox-group>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- Upload Logo -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">
             Logo
             <div class="sub-text">png, jpg, jpeg / 200 * 200</div>
           </div>
-        </div>
-        <div class="col-9 col-md-6">
-          <input type="file" id="logo-inputfile" ref="file" class="logo-inputfile" accept="image/jpeg,image/png" @change="handleLogoUpload()" />
-          <label for="logo-inputfile" class="btn btn-outline-secondary">Choose image</label>
-        </div>
-      </div>
+        </a-col>
+        <a-col :span="17" :offset="1">
+          <a-form-model-item>
+            <input type="file" id="logo-inputfile" ref="file" class="logo-inputfile" accept="image/jpeg,image/png" @change="handleLogoUpload" />
+            <label for="logo-inputfile" class="ant-btn" :style="{ paddingTop: '5px' }">Choose image</label>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- Status -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">Status</div>
-        </div>
-        <div class="col-3 col-md-4">
-          <b-form-select v-model="form.status" :options="statusOptions"></b-form-select>
-        </div>
-        <div class="col-6 col-md-6">
-          <div class="mt-1">
-            <b-form-checkbox
-              id="status"
-              v-model="form.isSendEmail"
-              :value="true"
-              :unchecked-value="false"
+        </a-col>
+        <a-col :span="6" :offset="1">
+          <a-form-model-item>
+            <a-select
+              v-model="form.status"
+              :options="statusOptions"
             >
-              <b>Send email to active affiliates on offer status changing</b>
-              <span class="info-icon ml-1" v-b-popover.hover.top="'Send email to active affiliates on offer status changing'">i</span>
-            </b-form-checkbox>
-          </div>
-        </div>
-      </div>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="10" :offset="1">
+          <a-form-model-item>
+            <a-checkbox v-model="form.isSendEmail">
+              <b>Send email to active affiliates on offer status changing</b>&nbsp;
+              <a-popover title="Info">
+                <template slot="content">
+                  <p>Bla bla bla</p>
+                </template>
+                <a-icon class="info-icon" type="info-circle" theme="filled" />
+              </a-popover>
+            </a-checkbox>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- Tags -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">Tags</div>
-        </div>
-        <div class="col-9 col-md-6">
-          <b-form-input v-model="form.tags"></b-form-input>
-        </div>
-      </div>
+        </a-col>
+        <a-col :span="17" :offset="1">
+          <a-form-model-item>
+            <a-input v-model="form.tags" />
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- Privacy level -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">Privacy level</div>
-        </div>
-        <div class="col-9 col-md-6">
-          <b-form-select v-model="form.privacyLevel" :options="privacyLevelOptions"></b-form-select>
-          <div class="sub-text">- public &ndash; Offer is available for everyone without any request;</div>
-          <div class="sub-text">- pre-moderation &ndash; Affiliates apply and then wait for network manager confirmation;</div>
-          <div class="sub-text">- private &ndash; Offer is not visible from affiliate`s side, except affiliates connected by manager from admin.</div>
-        </div>
-      </div>
-      
+        </a-col>
+        <a-col :span="17" :offset="1">
+          <a-form-model-item>
+            <a-select
+              v-model="form.privacyLevel"
+              :options="privacyLevelOptions"
+            >
+            </a-select>
+            <div class="sub-text">- public &ndash; Offer is available for everyone without any request;</div>
+            <div class="sub-text">- pre-moderation &ndash; Affiliates apply and then wait for network manager confirmation;</div>
+            <div class="sub-text">- private &ndash; Offer is not visible from affiliate`s side, except affiliates connected by manager from admin.</div>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+
       <hr />
-      <b-button variant="info" class="mr-2" @click="onSaveAndContinue">Save and continue</b-button>
-      <b-button type="submit" variant="info" class="mr-2">Save</b-button>
-      <b-button variant="outline-secondary" @click="onCancel">Cancel</b-button>
+      <a-button type="primary" :style="{ marginRight: '10px' }" @click="onSaveAndContinue">Save and continue</a-button>
+      <a-button type="primary" :style="{ marginRight: '10px' }" @click="onSubmit">Save</a-button>
+      <a-button @click="onCancel">Cancel</a-button>
 
-      <div class="row mt-3">
-        <div class="col-9 offset-3 col-md-6 offset-md-2">
+      <a-row :style="{ marginTop: '15px' }">
+        <a-col :span="17" :offset="7">
           <div class="sub-text">Shows the model of payment for affiliates who use your API.</div>
-        </div>
-      </div>
-
-      <div class="row form-group mt-2">
-        <div class="col-3 col-md-2">
+        </a-col>
+      </a-row>
+      
+      <!-- Offer schedule -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">Offer schedule</div>
-        </div>
-        <div class="col-9 col-md-6 mt-1">
-          <b-form-checkbox
-            id="offer-schedule"
-            v-model="form.isOfferSchedule"
-            :value="true"
-            :unchecked-value="false"
-          >
-          </b-form-checkbox>
-        </div>
-      </div>
+        </a-col>
+        <a-col :span="6" :offset="1">
+          <a-form-model-item>
+            <a-checkbox v-model="form.isOfferSchedule"></a-checkbox>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group mt-2">
-        <div class="col-3 offset-3 col-md-3 offset-md-2">
-          <label for="start-at"><b>Start at</b></label>
-          <b-form-datepicker id="start-at" v-model="form.startAt" placeholder="Specify date" class="mb-2"></b-form-datepicker>
-        </div>
-        <div class="col-3 col-md-3">
-          <label for="start-at">
-            <b>Stop date</b>
-            <span class="info-icon ml-1" v-b-popover.hover.top="'Stop date'">i</span>
-          </label>
-          <b-form-datepicker id="stop-date" v-model="form.stopDate" placeholder="Specify date" class="mb-2"></b-form-datepicker>
-        </div>
-        <div class="col-3 col-md-3">
-          <label for="timezone"><b>Timezone</b></label>
-          <b-form-select id="timezone" v-model="form.timezone" :options="timezoneOptions"></b-form-select>
-        </div>
-      </div>
+      <!-- Period -->
+      <a-row>
+        <a-col :span="6">
+        </a-col>
+        <a-col :span="5" :offset="1">
+          <a-form-model-item>
+            <label for="start-at" :style="{ lineHeight: '20px', marginBottom: '0px' }"><b>Start at</b></label><br />
+            <a-date-picker id="start-at" v-model="form.startAt" placeholder="Specify date"></a-date-picker>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="5">
+          <a-form-model-item>
+            <label for="start-at" :style="{ lineHeight: '20px', marginBottom: '0px' }">
+              <b>Stop date</b>&nbsp;
+              <a-popover title="Info">
+                <template slot="content">
+                  <p>Bla bla bla</p>
+                </template>
+                <a-icon class="info-icon" type="info-circle" theme="filled" :style="{ marginTop: '15px' }" />
+              </a-popover>
+            </label><br />
+            <a-date-picker id="start-at" v-model="form.stopDate" placeholder="Specify date"></a-date-picker>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="7">
+          <a-form-model-item>
+            <label for="start-at" :style="{ lineHeight: '20px', marginBottom: '0px' }"><b>Timezone</b></label><br />
+            <a-select
+              v-model="form.timezone"
+              :options="timezoneOptions"
+            />
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
-          <div class="caption">Send email to active webmasters before stopping</div>
-        </div>
-        <div class="col-3 col-md-2">
-          <b-form-input type="number" min="0" max="23" step="1" v-model="form.hours"></b-form-input>
-        </div>
-      </div>
+      <!-- Hours -->
+      <a-row>
+        <a-col :span="6">
+          <div class="caption">Offer schedule</div>
+        </a-col>
+        <a-col :span="5" :offset="1">
+          <a-form-model-item>
+            <a-input-number
+              v-model="form.hours"
+              :min="0"
+              :max="23"
+              placeholder="Specify hours"
+            />
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- Categories -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">Categories</div>
-        </div>
-        <div class="col-3 col-md-6">
-          <b-form-input v-model="form.categories"></b-form-input>
-          <div class="sub-text">Used for offers sorting by specific category</div>
-        </div>
-        <div class="col-1 col-md-1">
-          <b-button variant="outline-secondary" @click="onAddCategory">+</b-button>
-        </div>
-      </div>
+        </a-col>
+        <a-col :span="15" :offset="1">
+          <a-form-model-item>
+            <a-input v-model="form.categories" />
+            <div class="sub-text">Used for offers sorting by specific category</div>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="1" :offset="1">
+          <a-form-model-item>
+            <a-button @click="onAddCategory">+</a-button>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
+      <!-- Upload PDF -->
+      <a-row>
+        <a-col :span="6">
           <div class="caption">
             IO document
             <div class="sub-text">PDF only, 100MB max</div>
           </div>
-        </div>
-        <div class="col-9 col-md-6">
-          <input type="file" id="pdf-inputfile" ref="file" class="pdf-inputfile" accept=".pdf" @change="handlePDFUpload()" />
-          <label for="pdf-inputfile" class="btn btn-outline-secondary">Choose</label>
-        </div>
-      </div>
+        </a-col>
+        <a-col :span="17" :offset="1">
+          <a-form-model-item>
+            <input type="file" id="pdf-inputfile" ref="file" class="pdf-inputfile" accept=".pdf" @change="handlePDFUpload" />
+            <label for="pdf-inputfile" class="ant-btn" :style="{ paddingTop: '5px' }">Choose</label>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
 
-      <div class="row form-group">
-        <div class="col-3 col-md-2">
-          <div class="caption">
-            Notes
-          </div>
-        </div>
-        <div class="col-9 col-md-6">
-          <b-form-textarea
-            id="notes-textarea"
-            v-model="form.notes"
-            rows="3"
-            max-rows="6"
-          ></b-form-textarea>
-          <div class="sub-text">Internal offer notice (The content of this note will not be displayed to Affiliates)</div>
-        </div>
-      </div>
+      <!-- Notes -->
+      <a-row>
+        <a-col :span="6">
+          <div class="caption">Notes</div>
+        </a-col>
+        <a-col :span="17" :offset="1">
+          <a-form-model-item>
+            <a-textarea v-model="form.notes" :rows="5" />
+          </a-form-model-item>
+        </a-col>
+      </a-row>
       
-    </b-form>
+    </a-form-model>
   </div>
 </template>
 
 <script>
 import tinymce from 'vue-tinymce-editor'
 import General from '@/api/general'
+// import Editor from '@tinymce/tinymce-vue'
 
 export default {
   name: 'GeneralPage',
   components: {
     tinymce
+    // Editor
   },
   data () {
     return {
+      formLayout: 'horizontal',
+      // form: this.$form.createForm(this, { name: 'general_form' }),
       form: {
-        advertiser: null,
+        advertiser: [],
         externalOfferId: '',
         kpi: '',
         trafficSources: [],
@@ -249,52 +340,56 @@ export default {
         pdfFile: '',
         notes: ''
       },
+      mceOptions: {
+        language: 'en_US'
+      },
       advertiserOptions: [
-        { value: null, text: 'Select advertise' },
-        { value: '1', text: 'Advertiser 1' },
-        { value: '2', text: 'Advertiser 2' },
-        { value: '3', text: 'Advertiser 3' },
-        { value: '4', text: 'Advertiser 4' },
-        { value: '5', text: 'Advertiser 5' }
+        { value: '1', label: 'Advertiser 1' },
+        { value: '2', label: 'Advertiser 2' },
+        { value: '3', label: 'Advertiser 3' },
+        { value: '4', label: 'Advertiser 4' },
+        { value: '5', label: 'Advertiser 5' }
       ],
       trafficSourcesOptions: [
-        { text: 'Web sites', value: 'websites' },
-        { text: 'Doorway', value: 'doorway' },
-        { text: 'Contextual advertising', value: 'contextual_advertising' },
-        { text: 'Contextual advertising of the brands', value: 'contextual_advertising_brands' },
-        { text: 'Teaser / Banner / RTB', value: 'teaser_banner_rtb' },
-        { text: 'Social Network: Targeted Ads', value: 'targeted_ads' },
-        { text: 'Social Network: publics, games, applications', value: 'publics_games_applications' },
-        { text: 'Email', value: 'email' },
-        { text: 'Mobile traffic', value: 'mobile_traffic' },
-        { text: 'ClickUnder/PopUnder', value: 'click_under' },
-        { text: 'Reselling traffic', value: 'reselling_traffic' },
-        { text: 'Motivated Traffic', value: 'motivated_traffic' },
-        { text: 'Messengers, sms', value: 'messengers_sms' },
-        { text: 'Video Ads', value: 'video_ads' },
-        { text: 'Push', value: 'push' },
-        { text: 'API', value: 'api' },
-        { text: 'Mobile App (store, pwa, apk, etx)', value: 'mobile_app' },
-        { text: 'Forecast', value: 'forecast' }
+        { label: 'Web sites', value: 'websites' },
+        { label: 'Doorway', value: 'doorway' },
+        { label: 'Contextual advertising', value: 'contextual_advertising' },
+        { label: 'Contextual advertising of the brands', value: 'contextual_advertising_brands' },
+        { label: 'Teaser / Banner / RTB', value: 'teaser_banner_rtb' },
+        { label: 'Social Network: Targeted Ads', value: 'targeted_ads' },
+        { label: 'Social Network: publics, games, applications', value: 'publics_games_applications' },
+        { label: 'Email', value: 'email' },
+        { label: 'Mobile traffic', value: 'mobile_traffic' },
+        { label: 'ClickUnder/PopUnder', value: 'click_under' },
+        { label: 'Reselling traffic', value: 'reselling_traffic' },
+        { label: 'Motivated Traffic', value: 'motivated_traffic' },
+        { label: 'Messengers, sms', value: 'messengers_sms' },
+        { label: 'Video Ads', value: 'video_ads' },
+        { label: 'Push', value: 'push' },
+        { label: 'API', value: 'api' },
+        { label: 'Mobile App (store, pwa, apk, etx)', value: 'mobile_app' },
+        { label: 'Forecast', value: 'forecast' }
       ],
       statusOptions: [
-        { value: '0', text: 'Disabled' },
-        { value: '1', text: 'Enabled' }
+        { value: '0', label: 'Disabled' },
+        { value: '1', label: 'Enabled' }
       ],
       privacyLevelOptions: [
-        { value: '1', text: 'Public' },
-        { value: '2', text: 'Pre-moderation' },
-        { value: '3', text: 'Private' }
+        { value: '1', label: 'Public' },
+        { value: '2', label: 'Pre-moderation' },
+        { value: '3', label: 'Private' }
       ],
       timezoneOptions: [
-        { value: '+03:00', text: '(GMT +03:00) Europe / Moscow' },
-        { value: '-12:00', text: '(GMT -12:00) Eniwetok, Kwajalein' },
-        { value: '-11:00', text: '(GMT -11:00) Midway Island, Samoa' },
-        { value: '-10:00', text: '(GMT -10:00) Hawaii' },
-        { value: '-09:50', text: '(GMT -9:30) Taiohae' },
-        { value: '-09:00', text: '(GMT -9:00) Alaska' },
-        { value: '-08:00', text: '(GMT -8:00) Pacific Time (US &amp; Canada)' }
-      ]
+        { value: '+03:00', label: '(GMT +03:00) Europe / Moscow' },
+        { value: '-12:00', label: '(GMT -12:00) Eniwetok, Kwajalein' },
+        { value: '-11:00', label: '(GMT -11:00) Midway Island, Samoa' },
+        { value: '-10:00', label: '(GMT -10:00) Hawaii' },
+        { value: '-09:50', label: '(GMT -9:30) Taiohae' },
+        { value: '-09:00', label: '(GMT -9:00) Alaska' },
+        { value: '-08:00', label: '(GMT -8:00) Pacific Time (US &amp; Canada)' }
+      ],
+      kpiCopy: '',
+      lang: 'en'
     }
   },
   methods: {
@@ -313,8 +408,22 @@ export default {
     onAddCategory () {
       alert('Add Category')
     },
+    onChangeTab (key) {
+      this.kpiCopy = this.form.kpi
+      this.lang = key
+      if (key === 'ru') {
+        this.mceOptions = { language_url: '/js/langs/ru.js' }
+        this.lang = key
+      } else {
+        this.mceOptions = { language: 'en_US' }
+      }
+    },
+    onEditorInit () {
+      this.form.kpi = this.kpiCopy
+    },
     handleLogoUpload () {
       this.form.logoFile = this.$refs.file.files[0]
+      console.log(this.form.logoFile)
     },
     handlePDFUpload () {
       this.form.pdfFile = this.$refs.file.files[0]
@@ -330,11 +439,12 @@ export default {
   .caption {
     text-align: right;
     font-weight: bold;
-    padding-top: 5px;
+    padding-top: 10px;
   }
   .sub-text {
     font-size: 12px;
     color: #AEB1B5;
+    line-height: 1em;
   }
   .logo-inputfile,
   .pdf-inputfile {
@@ -345,6 +455,7 @@ export default {
     position: absolute;
     z-index: -1;
   }
+  /*
   .info-icon {
     display: inline-block;
     font-size: 12px;
@@ -354,6 +465,22 @@ export default {
     color: #fff;
     background-color: #344A67;
     text-align: center;
+    &:hover {
+      cursor: pointer;
+    }
+  }
+  */
+  /* ---- */
+  .label-bold {
+    font-weight: bold;
+  }
+  .ant-row.ant-form-item {
+    margin-bottom: 10px;
+  }
+  .info-icon {
+    position: relative;
+    top: -3px;
+    color: #344A67;
     &:hover {
       cursor: pointer;
     }
